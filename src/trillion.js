@@ -1,15 +1,18 @@
 /*
 
 todo:
+tests
 immutable.js integration
 additive filter application
 remove display/raw distinction
-get rid of filter names
+reset filters
+edit rows
+recalculate rows
 allow setting custom id for headers
+aggregations
 fuzzy search
 blank cells?
 custom filters?
-tests
 readme
 eslint
 
@@ -402,15 +405,6 @@ Trillion.prototype.unregisterListener = function (listener) {
 
   this.listeners = listeners;
 };
-
-function Trillion2 (options) {
-  return (function TrillionEnv () {
-    const props = assign({}, options);
-    const state = {};
-
-    return {};
-  })();
-}
 
 export default Trillion;
 
