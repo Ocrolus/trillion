@@ -51,6 +51,7 @@ function paginate () {
   }
 
   this.totalPages = Math.ceil(rows.length / this.options.pageSize);
+  this.currentRows = view.length;
 
   return view;
 }
@@ -73,6 +74,7 @@ Trillion.prototype.initialize = function (input, indices, options) {
   this.listeners = [];
   this.sortConfig = null;
   this.currentPage = 1;
+  this.currentRows = 0;
   this.totalPages = 1;
   this.totalRows = 0;
 
@@ -261,6 +263,7 @@ Trillion.prototype.setPageSize = function (size) {
 Trillion.prototype.getPageInfo = function () {
   return {
     'currentPage': this.currentPage,
+    'currentRows': this.currentRows,
     'totalPages': this.totalPages,
     'totalRows': this.totalRows
   };
