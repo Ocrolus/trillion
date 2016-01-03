@@ -265,7 +265,8 @@ Trillion.prototype.getPageInfo = function () {
     'currentPage': this.currentPage,
     'currentRows': this.currentRows,
     'totalPages': this.totalPages,
-    'totalRows': this.totalRows
+    'totalRows': this.totalRows,
+    'pageSize': this.options.pageSize
   };
 };
 
