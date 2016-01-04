@@ -91,15 +91,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	/*
 
 	todo:
+	tests
 	immutable.js integration
 	additive filter application
 	remove display/raw distinction
-	get rid of filter names
+	reset filters
+	edit rows
+	recalculate rows
 	allow setting custom id for headers
+	aggregations
 	fuzzy search
 	blank cells?
 	custom filters?
-	tests
 	readme
 	eslint
 
@@ -131,6 +134,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  this.totalPages = Math.ceil(rows.length / this.options.pageSize);
+	  this.currentRows = view.length;
 
 	  return view;
 	}
@@ -153,6 +157,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.listeners = [];
 	  this.sortConfig = null;
 	  this.currentPage = 1;
+	  this.currentRows = 0;
 	  this.totalPages = 1;
 	  this.totalRows = 0;
 
@@ -362,8 +367,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	Trillion.prototype.getPageInfo = function () {
 	  return {
 	    'currentPage': this.currentPage,
+	    'currentRows': this.currentRows,
 	    'totalPages': this.totalPages,
-	    'totalRows': this.totalRows
+	    'totalRows': this.totalRows,
+	    'pageSize': this.options.pageSize
 	  };
 	};
 
@@ -508,15 +515,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  this.listeners = listeners;
 	};
-
-	function Trillion2(options) {
-	  return (function TrillionEnv() {
-	    var props = (0, _objectAssign2.default)({}, options);
-	    var state = {};
-
-	    return {};
-	  })();
-	}
 
 	exports.default = Trillion;
 
