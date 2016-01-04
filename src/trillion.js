@@ -1,15 +1,15 @@
 /*
 
 todo:
+AGGREGATIONS
+remove display/raw distinction
+edit rows
 tests
+
 immutable.js integration
 additive filter application
-remove display/raw distinction
 reset filters
-edit rows
-recalculate rows
 allow setting custom id for headers
-aggregations
 fuzzy search
 blank cells?
 custom filters?
@@ -329,7 +329,7 @@ Trillion.prototype.notifyListeners = function (view, listeners) {
 };
 
 //todo: replace with aggregations
-Trillion.prototype.getRows = function (query) {
+Trillion.prototype._getRows = function (query) {
   if (query.field) {
     return this.rows.map(row => {
       return row[query.field];
@@ -340,7 +340,8 @@ Trillion.prototype.getRows = function (query) {
 };
 
 //todo: replace with aggregations
-Trillion.prototype.getPageRows = function (query) {
+Trillion.prototype._getPageRows = function (query) {
+  //todo: don't need to re-paginate, can just use pageInfo to start at the correct index
   var view = paginate.call(this);
 
   if (query.field) {
@@ -353,7 +354,7 @@ Trillion.prototype.getPageRows = function (query) {
 };
 
 //todo: replace with aggregations
-Trillion.prototype.findRows = function (query) {
+Trillion.prototype._findOriginalRows = function (query) {
   if (query.field && query.values) {
     return this.rows.filter(row => {
       return query.values.indexOf(row[query.field].raw) !== -1;
@@ -363,6 +364,22 @@ Trillion.prototype.findRows = function (query) {
         ret[header.field] = row[header.field].display;
       });
       return ret;
+    });
+  } else {
+    throw Error('Lookups without a field and values are not supported');
+  }
+};
+
+//todo: replace with aggregations
+Trillion.prototype._findAllOriginalRows = function (query) {
+  if (query.field && query.values) {
+    return this.data.filter(row => {
+      return query.values.indexOf(row[query.field].raw) !== -1;
+    }).map(row => {
+      const ret = {};
+      this.headers.forEach(header => {
+        ret[header.field] = row[header.field].display;
+      });
     });
   } else {
     throw Error('Lookups without a field and values are not supported');
