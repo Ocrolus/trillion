@@ -91,15 +91,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	/*
 
 	todo:
+	AGGREGATIONS
+	remove display/raw distinction
+	edit rows
 	tests
+
 	immutable.js integration
 	additive filter application
-	remove display/raw distinction
 	reset filters
-	edit rows
-	recalculate rows
 	allow setting custom id for headers
-	aggregations
 	fuzzy search
 	blank cells?
 	custom filters?
@@ -220,6 +220,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          display = index.display(raw);
 	        }
 
+	        //todo: get rid of this asap
 	        ret[index.field] = {
 	          'display': display,
 	          'raw': raw
@@ -433,7 +434,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	//todo: replace with aggregations
-	Trillion.prototype.getRows = function (query) {
+	Trillion.prototype._getRows = function (query) {
 	  if (query.field) {
 	    return this.rows.map(function (row) {
 	      return row[query.field];
@@ -444,7 +445,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	//todo: replace with aggregations
-	Trillion.prototype.getPageRows = function (query) {
+	Trillion.prototype._getPageRows = function (query) {
+	  //todo: don't need to re-paginate, can just use pageInfo to start at the correct index
 	  var view = paginate.call(this);
 
 	  if (query.field) {
@@ -457,7 +459,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	//todo: replace with aggregations
-	Trillion.prototype.findRows = function (query) {
+	Trillion.prototype._findOriginalRows = function (query) {
 	  var _this = this;
 
 	  if (query.field && query.values) {
@@ -466,6 +468,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }).map(function (row) {
 	      var ret = {};
 	      _this.headers.forEach(function (header) {
+	        ret[header.field] = row[header.field].display;
+	      });
+	      return ret;
+	    });
+	  } else {
+	    throw Error('Lookups without a field and values are not supported');
+	  }
+	};
+
+	//todo: replace with aggregations
+	Trillion.prototype._findAllOriginalRows = function (query) {
+	  var _this2 = this;
+
+	  if (query.field && query.values) {
+	    return this.data.filter(function (row) {
+	      return query.values.indexOf(row[query.field].raw) !== -1;
+	    }).map(function (row) {
+	      var ret = {};
+	      _this2.headers.forEach(function (header) {
 	        ret[header.field] = row[header.field].display;
 	      });
 	      return ret;

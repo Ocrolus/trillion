@@ -130,6 +130,7 @@ Trillion.prototype.initialize = function (input, indices, options) {
         display = index.display(raw);
       }
 
+      //todo: get rid of this asap
       ret[index.field] = {
         'display': display,
         'raw': raw
@@ -380,6 +381,7 @@ Trillion.prototype._findAllOriginalRows = function (query) {
       this.headers.forEach(header => {
         ret[header.field] = row[header.field].display;
       });
+      return ret;
     });
   } else {
     throw Error('Lookups without a field and values are not supported');
