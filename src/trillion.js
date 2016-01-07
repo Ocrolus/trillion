@@ -6,10 +6,10 @@ remove display/raw distinction
 edit rows
 tests
 
+deleted rows and flushing deleted rows
 immutable.js integration
 additive filter application
 reset filters
-allow setting custom id for headers
 fuzzy search
 blank cells?
 custom filters?
@@ -75,6 +75,7 @@ Trillion.prototype.initialize = function (input, indices, options) {
   this.sortConfig = null;
   this.currentPage = 1;
   this.currentRows = 0;
+  this.visibleRows = 0;
   this.totalPages = 1;
   this.totalRows = 0;
 
@@ -164,6 +165,8 @@ Trillion.prototype.compute = function () {
 
   const transform = t.compose.apply(null, stack);
   const rows = t.seq(this.data, transform);
+
+  this.visibleRows = rows.length;
 
   this.rows = rows;
 
@@ -265,6 +268,7 @@ Trillion.prototype.getPageInfo = function () {
   return {
     'currentPage': this.currentPage,
     'currentRows': this.currentRows,
+    'visibleRows': this.visibleRows,
     'totalPages': this.totalPages,
     'totalRows': this.totalRows,
     'pageSize': this.options.pageSize

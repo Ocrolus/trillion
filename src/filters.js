@@ -106,5 +106,5 @@ export default {
     }
   },
 
-  'Filters': filters
+  'filters': filters
 };

@@ -99,7 +99,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	immutable.js integration
 	additive filter application
 	reset filters
-	allow setting custom id for headers
 	fuzzy search
 	blank cells?
 	custom filters?
@@ -158,6 +157,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.sortConfig = null;
 	  this.currentPage = 1;
 	  this.currentRows = 0;
+	  this.visibleRows = 0;
 	  this.totalPages = 1;
 	  this.totalRows = 0;
 
@@ -269,6 +269,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var transform = _transducers2.default.compose.apply(null, stack);
 	  var rows = _transducers2.default.seq(this.data, transform);
 
+	  this.visibleRows = rows.length;
+
 	  this.rows = rows;
 
 	  this.sort();
@@ -369,6 +371,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return {
 	    'currentPage': this.currentPage,
 	    'currentRows': this.currentRows,
+	    'visibleRows': this.visibleRows,
 	    'totalPages': this.totalPages,
 	    'totalRows': this.totalRows,
 	    'pageSize': this.options.pageSize
@@ -1680,7 +1683,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  },
 
-	  'Filters': filters
+	  'filters': filters
 	};
 
 /***/ },
