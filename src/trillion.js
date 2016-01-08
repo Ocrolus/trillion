@@ -109,7 +109,8 @@ Trillion.prototype.initialize = function (input, indices, options) {
     let ret = {};
     let item = input[i];
 
-    for(let index of tableIndices) {
+    for(let j = 0; j < tableIndices.length; j++) {
+      const index = tableIndices[i];
       //todo: clone objects?
       let raw = item[index.field];
 
@@ -330,17 +331,6 @@ Trillion.prototype.notifyListeners = function (view, listeners) {
     if (typeof listeners[i] === 'function') {
       listeners[i](view, headers, pageInfo, sortInfo);
     }
-  }
-};
-
-//todo: replace with aggregations
-Trillion.prototype._getRows = function (query) {
-  if (query.field) {
-    return this.rows.map(row => {
-      return row[query.field];
-    });
-  } else {
-    throw Error('Lookups by non-field properties are not supported');
   }
 };
 

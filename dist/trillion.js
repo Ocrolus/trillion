@@ -96,6 +96,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	edit rows
 	tests
 
+	deleted rows and flushing deleted rows
 	immutable.js integration
 	additive filter application
 	reset filters
@@ -191,54 +192,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var ret = {};
 	    var item = input[i];
 
-	    var _iteratorNormalCompletion = true;
-	    var _didIteratorError = false;
-	    var _iteratorError = undefined;
+	    for (var j = 0; j < tableIndices.length; j++) {
+	      var index = tableIndices[i];
+	      //todo: clone objects?
+	      var raw = item[index.field];
 
-	    try {
-	      for (var _iterator = tableIndices[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	        var index = _step.value;
-
-	        //todo: clone objects?
-	        var raw = item[index.field];
-
-	        if (index.generator) {
-	          raw = index.generator(item);
-	        }
-
-	        var display = raw;
-
-	        var indexType = index.type;
-
-	        if (indexType && _types2.default[indexType]) {
-	          if (typeof raw !== 'undefined') {
-	            raw = _types2.default[indexType].convert(raw);
-	          }
-	        }
-
-	        if (index.display) {
-	          display = index.display(raw);
-	        }
-
-	        //todo: get rid of this asap
-	        ret[index.field] = {
-	          'display': display,
-	          'raw': raw
-	        };
+	      if (index.generator) {
+	        raw = index.generator(item);
 	      }
-	    } catch (err) {
-	      _didIteratorError = true;
-	      _iteratorError = err;
-	    } finally {
-	      try {
-	        if (!_iteratorNormalCompletion && _iterator.return) {
-	          _iterator.return();
-	        }
-	      } finally {
-	        if (_didIteratorError) {
-	          throw _iteratorError;
+
+	      var display = raw;
+
+	      var indexType = index.type;
+
+	      if (indexType && _types2.default[indexType]) {
+	        if (typeof raw !== 'undefined') {
+	          raw = _types2.default[indexType].convert(raw);
 	        }
 	      }
+
+	      if (index.display) {
+	        display = index.display(raw);
+	      }
+
+	      //todo: get rid of this asap
+	      ret[index.field] = {
+	        'display': display,
+	        'raw': raw
+	      };
 	    }
 
 	    output.push(ret);
@@ -304,7 +285,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 
 	  if (sort) {
-	    sortFn = function (a, b) {
+	    sortFn = function sortFn(a, b) {
 	      var x = a[field].raw;
 	      var y = b[field].raw;
 
@@ -433,17 +414,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (typeof listeners[i] === 'function') {
 	      listeners[i](view, headers, pageInfo, sortInfo);
 	    }
-	  }
-	};
-
-	//todo: replace with aggregations
-	Trillion.prototype._getRows = function (query) {
-	  if (query.field) {
-	    return this.rows.map(function (row) {
-	      return row[query.field];
-	    });
-	  } else {
-	    throw Error('Lookups by non-field properties are not supported');
 	  }
 	};
 
@@ -1641,7 +1611,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 
 	    if (filters[type]) {
-	      fn = function (data) {
+	      fn = function fn(data) {
 	        //todo: remove .raw
 	        return filters[type].apply(filters, [data[field].raw].concat(args));
 	      };
