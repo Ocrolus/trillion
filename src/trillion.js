@@ -110,7 +110,7 @@ Trillion.prototype.initialize = function (input, indices, options) {
     let item = input[i];
 
     for(let j = 0; j < tableIndices.length; j++) {
-      const index = tableIndices[i];
+      const index = tableIndices[j];
       //todo: clone objects?
       let raw = item[index.field];
 
