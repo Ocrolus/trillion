@@ -193,7 +193,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var item = input[i];
 
 	    for (var j = 0; j < tableIndices.length; j++) {
-	      var index = tableIndices[i];
+	      var index = tableIndices[j];
 	      //todo: clone objects?
 	      var raw = item[index.field];
 
