@@ -225,15 +225,12 @@ Trillion.prototype.sort = function (sortFields) {
         const fieldSortFn = sortFnFactory(sortFieldConfig.field);
 
         if (retval === 0) {
-          console.log(a, b);
           retval = fieldSortFn(a, b);
         }
       }
 
       return retval;
     };
-
-    console.log(sortFn);
   }
 
   this.rows = this.rows.sort(sortFn);
