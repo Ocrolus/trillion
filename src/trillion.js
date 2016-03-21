@@ -177,7 +177,7 @@ Trillion.prototype.compute = function () {
 };
 
 //todo: probably should be internal
-Trillion.prototype.sort = function () {
+Trillion.prototype.sort = function (sortFields) {
   if (!this.sortConfig) {
     return;
   }
@@ -189,17 +189,21 @@ Trillion.prototype.sort = function () {
   let sort = header.sort;
   let ascending = this.sortConfig.ascending;
 
-  let sortFn = function (a, b) {
-    const x = a[field].raw;
-    const y = b[field].raw;
-    if (typeof x === 'number' && typeof y === 'number') {
-      return Types.number.sort(x, y);
-    } else if (typeof x === 'string' && typeof y === 'string') {
-      return Types.string.sort(x, y);
-    } else {
-      return x < y ? -1 : (x === y ? 0 : 1);
-    }
+  let sortFnFactory = function (field) {
+    return function (a, b) {
+      const x = a[field].raw;
+      const y = b[field].raw;
+      if (typeof x === 'number' && typeof y === 'number') {
+        return Types.number.sort(x, y);
+      } else if (typeof x === 'string' && typeof y === 'string') {
+        return Types.text.sort(x, y);
+      } else {
+        return x < y ? -1 : (x === y ? 0 : 1);
+      }
+    };
   };
+
+  let sortFn = sortFnFactory(field);
 
   if (sort) {
     sortFn = function (a, b) {
@@ -211,10 +215,31 @@ Trillion.prototype.sort = function () {
     }
   }
 
+  if (Array.isArray(sortFields)) {
+    const defaultSortFn = sortFn;
+
+    sortFn = function (a, b) {
+      let retval = defaultSortFn(a, b);
+      for (let i = 0; i < sortFields.length; i++) {
+        const sortFieldConfig = sortFields[i];
+        const fieldSortFn = sortFnFactory(sortFieldConfig.field);
+
+        if (retval === 0) {
+          console.log(a, b);
+          retval = fieldSortFn(a, b);
+        }
+      }
+
+      return retval;
+    };
+
+    console.log(sortFn);
+  }
+
   this.rows = this.rows.sort(sortFn);
 };
 
-Trillion.prototype.sortByHeader = function (headerId) {
+Trillion.prototype.sortByHeader = function (headerId, additionalSort) {
   let header = null;
 
   for(let i = 0; i < this.headers.length; i++) {
@@ -239,7 +264,7 @@ Trillion.prototype.sortByHeader = function (headerId) {
     };
   }
 
-  this.sort();
+  this.sort(additionalSort);
   this.renderPage();
 };
 

@@ -260,7 +260,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	//todo: probably should be internal
-	Trillion.prototype.sort = function () {
+	Trillion.prototype.sort = function (sortFields) {
 	  if (!this.sortConfig) {
 	    return;
 	  }
@@ -272,17 +272,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var sort = header.sort;
 	  var ascending = this.sortConfig.ascending;
 
-	  var sortFn = function sortFn(a, b) {
-	    var x = a[field].raw;
-	    var y = b[field].raw;
-	    if (typeof x === 'number' && typeof y === 'number') {
-	      return _types2.default.number.sort(x, y);
-	    } else if (typeof x === 'string' && typeof y === 'string') {
-	      return _types2.default.string.sort(x, y);
-	    } else {
-	      return x < y ? -1 : x === y ? 0 : 1;
-	    }
+	  var sortFnFactory = function sortFnFactory(field) {
+	    return function (a, b) {
+	      var x = a[field].raw;
+	      var y = b[field].raw;
+	      if (typeof x === 'number' && typeof y === 'number') {
+	        return _types2.default.number.sort(x, y);
+	      } else if (typeof x === 'string' && typeof y === 'string') {
+	        return _types2.default.text.sort(x, y);
+	      } else {
+	        return x < y ? -1 : x === y ? 0 : 1;
+	      }
+	    };
 	  };
+
+	  var sortFn = sortFnFactory(field);
 
 	  if (sort) {
 	    sortFn = function sortFn(a, b) {
@@ -294,10 +298,33 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	  }
 
+	  if (Array.isArray(sortFields)) {
+	    (function () {
+	      var defaultSortFn = sortFn;
+
+	      sortFn = function sortFn(a, b) {
+	        var retval = defaultSortFn(a, b);
+	        for (var i = 0; i < sortFields.length; i++) {
+	          var sortFieldConfig = sortFields[i];
+	          var fieldSortFn = sortFnFactory(sortFieldConfig.field);
+
+	          if (retval === 0) {
+	            console.log(a, b);
+	            retval = fieldSortFn(a, b);
+	          }
+	        }
+
+	        return retval;
+	      };
+
+	      console.log(sortFn);
+	    })();
+	  }
+
 	  this.rows = this.rows.sort(sortFn);
 	};
 
-	Trillion.prototype.sortByHeader = function (headerId) {
+	Trillion.prototype.sortByHeader = function (headerId, additionalSort) {
 	  var header = null;
 
 	  for (var i = 0; i < this.headers.length; i++) {
@@ -322,7 +349,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	  }
 
-	  this.sort();
+	  this.sort(additionalSort);
 	  this.renderPage();
 	};
 
