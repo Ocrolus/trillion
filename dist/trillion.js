@@ -1600,8 +1600,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	//ported from DataTables
 	function SmartFilter(haystack, needle) {
+	  haystack = haystack.toLowerCase();
+	  needle = needle.toLowerCase();
 	  //todo: this matches exact indexOf matches poorly, hence this early bailout
-	  if (haystack.indexOf('needle') !== -1) {
+	  if (haystack.indexOf(needle) !== -1) {
 	    return true;
 	  }
 
@@ -1628,11 +1630,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	exports.default = {
-	  'createFilter': function createFilter(type, field) {
+	  'createFilter': function createFilter(type, fields) {
 	    for (var _len = arguments.length, args = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
 	      args[_key - 2] = arguments[_key];
 	    }
 
+	    fields = fields.split(' ');
 	    var fn = function fn() {
 	      return true;
 	    };
@@ -1640,7 +1643,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (filters[type]) {
 	      fn = function fn(data) {
 	        //todo: remove .raw
-	        return filters[type].apply(filters, [data[field].raw].concat(args));
+	        return fields.some(function (field) {
+	          return filters[type].apply(filters, [data[field].raw].concat(args));
+	        });
 	      };
 	    }
 

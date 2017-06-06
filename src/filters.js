@@ -30,8 +30,10 @@ function AnyFilter (needle, haystack) {
 
 //ported from DataTables
 function SmartFilter (haystack, needle) {
+  haystack = haystack.toLowerCase();
+  needle = needle.toLowerCase();
   //todo: this matches exact indexOf matches poorly, hence this early bailout
-  if (haystack.indexOf('needle') !== -1) {
+  if (haystack.indexOf(needle) !== -1) {
     return true;
   }
 
@@ -58,7 +60,8 @@ const filters = {
 };
 
 export default {
-  'createFilter': function (type, field, ...args) {
+  'createFilter': function (type, fields, ...args) {
+    fields = fields.split(' ');
     let fn = function () {
       return true;
     };
@@ -66,7 +69,7 @@ export default {
     if (filters[type]) {
       fn = function (data) {
         //todo: remove .raw
-        return filters[type](data[field].raw, ...args);
+        return fields.some(field => filters[type](data[field].raw, ...args));
       };
     }
 
