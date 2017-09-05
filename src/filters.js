@@ -19,11 +19,13 @@ function RangeFilter (value, min, max) {
 }
 
 function AnyFilter (needle, haystack) {
-  for(let i = 0, l = haystack.length; i < l; i++) {
-    if (haystack[i] === needle) {
-      return true;
-    }
+  if (needle.constructor === String) {
+    needle = needle.split(' ');
   }
+
+  if (needle.filter((n) => haystack.includes(n)).length) {
+    return true;
+  } 
 
   return false;
 }
