@@ -72,7 +72,7 @@ Trillion.prototype.initialize = function (input, indices, options) {
   this.options = {};
   this.filters = [];
   this.listeners = [];
-  this.sortConfig = null;
+  this.sortConfig = [];
   this.currentPage = 1;
   this.currentRows = 0;
   this.visibleRows = 0;
@@ -177,8 +177,8 @@ Trillion.prototype.compute = function () {
 };
 
 //todo: probably should be internal
-Trillion.prototype.sort = function (sortFields) {
-  if (!this.sortConfig) {
+Trillion.prototype.sort = function () {
+  if (!Object.keys(this.sortConfig).length) {
     return;
   }
 
@@ -203,68 +203,42 @@ Trillion.prototype.sort = function (sortFields) {
     };
   };
 
-  let sortFn = sortFnFactory(field);
+  let sortedHeaders = this.sortConfig;
 
-  if (sort) {
-    sortFn = function (a, b) {
-      const x = a[field].raw;
-      const y = b[field].raw;
+  let sortFn = function sortFn(a, b) {
+    let retval = null;
+    for (var i in sortedHeaders) {
+      let headerSortFn = sortFnFactory(sortedHeaders[i]['header'].field);
+      if (sortedHeaders[i]['header'].sort) {
+        headerSortFn = function headerSortFn(a, b) {
+          const x = a[sortedHeaders[i]['header'].field].raw;
+          const y = b[sortedHeaders[i]['header'].field].raw;
 
-      const sortVal = clamp(sort(x, y, ascending), -1, 1);
-      return ascending ? sortVal : 0 - sortVal;
-    }
-  }
-
-  if (Array.isArray(sortFields)) {
-    const defaultSortFn = sortFn;
-
-    sortFn = function (a, b) {
-      let retval = defaultSortFn(a, b);
-
-      for (let i = 0; i < sortFields.length; i++) {
-        const sortFieldConfig = sortFields[i];
-        const fieldSortFn = sortFnFactory(sortFieldConfig.field);
-
-        if (retval === 0) {
-          retval = fieldSortFn(a, b);
-        } else {
-          break;
-        }
+          const sortVal = clamp(sortedHeaders[i]['header'].sort(x, y, sortedHeaders[i]['ascending']), -1, 1);
+          return sortedHeaders[i]['ascending'] ? sortVal : 0 - sortVal;
+        };
       }
-
-      return retval;
-    };
+      retval = headerSortFn(a, b);
+      if (retval !== 0) {
+        break;
+      }
+    }
+    return retval
   }
 
   this.rows = this.rows.sort(sortFn);
 };
 
-Trillion.prototype.sortByHeader = function (headerId, additionalSort) {
-  let header = null;
-
-  for(let i = 0; i < this.headers.length; i++) {
-    if (this.headers[i].id === headerId) {
-      header = this.headers[i];
-      break;
-    }
+Trillion.prototype.sortByHeader = function (sortedHeaders) {
+  this.sortConfig = [];
+  for (var id in sortedHeaders) {
+    this.sortConfig.push({
+      'header': sortedHeaders[id],
+      'ascending': sortedHeaders[id].defaultSortDescending ? false: true
+    })
   }
 
-  if (!header) {
-    throw Error('Header not found');
-  }
-
-  if (this.sortConfig && header === this.sortConfig.header) {
-    this.sortConfig.ascending = !this.sortConfig.ascending;
-  } else {
-    const defaultSortDescending = header.defaultSortDescending === true;
-
-    this.sortConfig = {
-      'header': header,
-      'ascending': defaultSortDescending ? false : true
-    };
-  }
-
-  this.sort(additionalSort);
+  this.sort();
   this.renderPage();
 };
 

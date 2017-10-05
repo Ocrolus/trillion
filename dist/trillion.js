@@ -155,7 +155,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.options = {};
 	  this.filters = [];
 	  this.listeners = [];
-	  this.sortConfig = null;
+	  this.sortConfig = [];
 	  this.currentPage = 1;
 	  this.currentRows = 0;
 	  this.visibleRows = 0;
@@ -260,17 +260,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	//todo: probably should be internal
-	Trillion.prototype.sort = function (sortFields) {
-	  if (!this.sortConfig) {
+	Trillion.prototype.sort = function () {
+	  if (!Object.keys(this.sortConfig).length) {
 	    return;
 	  }
-
-	  var header = this.sortConfig.header;
-
-	  var field = header.field;
-	  var type = header.type;
-	  var sort = header.sort;
-	  var ascending = this.sortConfig.ascending;
 
 	  var sortFnFactory = function sortFnFactory(field) {
 	    return function (a, b) {
@@ -285,71 +278,42 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    };
 	  };
+	  var sortedHeaders = this.sortConfig;
 
-	  var sortFn = sortFnFactory(field);
+	  var sortFn = function sortFn(a, b) {
+	  	var retval = null;
+	  	for (var i in sortedHeaders) {
+	  	  var headerSortFn = sortFnFactory(sortedHeaders[i]['header'].field);
+	  	  if (sortedHeaders[i]['header'].sort) {
+			headerSortFn = function headerSortFn(a, b) {
+			  var x = a[sortedHeaders[i]['header'].field].raw;
+			  var y = b[sortedHeaders[i]['header'].field].raw;
 
-	  if (sort) {
-	    sortFn = function sortFn(a, b) {
-	      var x = a[field].raw;
-	      var y = b[field].raw;
-
-	      var sortVal = clamp(sort(x, y, ascending), -1, 1);
-	      return ascending ? sortVal : 0 - sortVal;
-	    };
-	  }
-
-	  if (Array.isArray(sortFields)) {
-	    (function () {
-	      var defaultSortFn = sortFn;
-
-	      sortFn = function sortFn(a, b) {
-	        var retval = defaultSortFn(a, b);
-	        for (var i = 0; i < sortFields.length; i++) {
-	          var sortFieldConfig = sortFields[i];
-	          var fieldSortFn = sortFnFactory(sortFieldConfig.field);
-
-	          if (retval === 0) {
-	            console.log(a, b);
-	            retval = fieldSortFn(a, b);
-	          }
-	        }
-
-	        return retval;
-	      };
-
-	      console.log(sortFn);
-	    })();
+			  var sortVal = clamp(sortedHeaders[i]['header'].sort(x, y, sortedHeaders[i]['ascending']), -1, 1);
+			  return sortedHeaders[i]['ascending'] ? sortVal : 0 - sortVal;
+			};
+		  }
+			retval = headerSortFn(a, b);
+			if (retval !== 0) {
+				break;
+			}
+	  	}
+	  	return retval
 	  }
 
 	  this.rows = this.rows.sort(sortFn);
 	};
 
-	Trillion.prototype.sortByHeader = function (headerId, additionalSort) {
-	  var header = null;
-
-	  for (var i = 0; i < this.headers.length; i++) {
-	    if (this.headers[i].id === headerId) {
-	      header = this.headers[i];
-	      break;
-	    }
+	Trillion.prototype.sortByHeader = function (sortedHeaders) {
+	  this.sortConfig = [];
+	  for (var id in sortedHeaders) {
+	  	this.sortConfig.push({
+	  	  'header': sortedHeaders[id],
+	  	  'ascending': sortedHeaders[id].defaultSortDescending ? false: true
+	  	})
 	  }
 
-	  if (!header) {
-	    throw Error('Header not found');
-	  }
-
-	  if (this.sortConfig && header === this.sortConfig.header) {
-	    this.sortConfig.ascending = !this.sortConfig.ascending;
-	  } else {
-	    var defaultSortDescending = header.defaultSortDescending === true;
-
-	    this.sortConfig = {
-	      'header': header,
-	      'ascending': defaultSortDescending ? false : true
-	    };
-	  }
-
-	  this.sort(additionalSort);
+	  this.sort();
 	  this.renderPage();
 	};
 
