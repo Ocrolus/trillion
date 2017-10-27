@@ -1567,22 +1567,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	//ported from DataTables
 	function SmartFilter(haystack, needle) {
 	  haystack = haystack.toLowerCase();
-	  needle = needle.toLowerCase();
-	  //todo: this matches exact indexOf matches poorly, hence this early bailout
-	  if (haystack.indexOf(needle) !== -1) {
-	    return true;
+	  var needles = needle.toLowerCase().replace(/^\s+|\s+$/g, "").split(' ');
+	  for (var i in needles){
+	    var needle = needles[i];
+	    //todo: this matches exact indexOf matches poorly, hence this early bailout
+	    if (haystack.indexOf(needle) !== -1) {
+	      return true;
+	    }
+
+	    const wordRegex = /"[^"]+"|[^ ]+/g;
+	    const words = needle.match(wordRegex).map(word => {
+	      return word.replace(/\"/g, '');
+	    });
+
+	    const smartRegexSource = '^(?=.*?' + words.join(')(?=.*?') + ').*$';
+	    const smartRegex = new RegExp(smartRegexSource, 'i');
+
+	    const match = haystack.match(smartRegex);
+	    if (match) {
+	      return true;
+	    }
 	  }
-
-	  var wordRegex = /"[^"]+"|[^ ]+/g;
-	  var words = needle.match(wordRegex).map(function (word) {
-	    return word.replace(/\"/g, '');
-	  });
-
-	  var smartRegexSource = '^(?=.*?' + words.join(')(?=.*?') + ').*$';
-	  var smartRegex = new RegExp(smartRegexSource, 'i');
-
-	  var match = haystack.match(smartRegex);
-	  return match;
+	  return false;
 	}
 
 	var filters = {
