@@ -33,25 +33,27 @@ function AnyFilter (needle, haystack) {
 //ported from DataTables
 function SmartFilter (haystack, needle) {
   haystack = haystack.toLowerCase();
-  var needles = needle.toLowerCase().replace(/^\s+|\s+$/g, "").split(' ');
+  var needles = needle.toLowerCase().split(',');
   for (var i in needles){
-    var needle = needles[i];
-    //todo: this matches exact indexOf matches poorly, hence this early bailout
-    if (haystack.indexOf(needle) !== -1) {
-      return true;
-    }
+    var needle = needles[i].trim();
+    if (needle.length) {
+      //todo: this matches exact indexOf matches poorly, hence this early bailout
+      if (haystack.indexOf(needle) !== -1) {
+        return true;
+      }
 
-    const wordRegex = /"[^"]+"|[^ ]+/g;
-    const words = needle.match(wordRegex).map(word => {
-      return word.replace(/\"/g, '');
-    });
+      const wordRegex = /"[^"]+"|[^ ]+/g;
+      const words = needle.match(wordRegex).map(word => {
+        return word.replace(/\"/g, '');
+      });
 
-    const smartRegexSource = '^(?=.*?' + words.join(')(?=.*?') + ').*$';
-    const smartRegex = new RegExp(smartRegexSource, 'i');
+      const smartRegexSource = '^(?=.*?' + words.join(')(?=.*?') + ').*$';
+      const smartRegex = new RegExp(smartRegexSource, 'i');
 
-    const match = haystack.match(smartRegex);
-    if (match) {
-      return true;
+      const match = haystack.match(smartRegex);
+      if (match) {
+        return true;
+      }
     }
   }
   return false;
